@@ -1,0 +1,29 @@
+#include <ncurses.h>
+
+int main()
+{
+    // init screen and sets up screen
+    initscr();
+
+    int x, y;
+    getmaxyx(stdscr, y, x);
+
+    // print to screen
+    printw("x=%i", x);
+    printw("y=%i", y);
+
+    mvaddch(0, x - 1, 'X');
+    mvaddch(y - 1, 0, 'Y');
+    mvaddch(y - 1, x - 1, 'Z');
+
+    // refreshes the screen
+    refresh();
+
+    // pause the screen output
+    getch();
+
+    // deallocates memory and ends ncurses
+    endwin();
+
+    return 0;
+}

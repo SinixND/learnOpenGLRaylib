@@ -1,0 +1,45 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Make (-j)",
+            "command": "make -j",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Make debug",
+            "command": "make debug",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Make debug (-j)",
+            "command": "make debug -j",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Make release",
+            "command": "make release -j",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "Make test",
+            "command": "make test",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
