@@ -1,135 +1,93 @@
-#include <iostream>
+#include <glad/glad.h>
 
-enum class State
-{
-    regen,
-    idle,
-    busy,
-    end_turn,
-};
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
-enum class Action
+//* Setup
+//* =======
+static void quit(
+    GLFWwindow* window,
+    int key,
+    [[maybe_unused]] int scancode,
+    int action,
+    [[maybe_unused]] int mods
+)
 {
-    none,
-    mov,
-    mov_active,
-    atk,
-    reg,
-};
+    if ( key == GLFW_KEY_ESCAPE && action == GLFW_PRESS )
+    {
+        glfwSetWindowShouldClose( window, GLFW_TRUE );
+    }
+}
+//* =======
 
-struct Hero
-{
-    int energy{10};
-    int maxEnergy{10};
-    int move{};
-};
-
-struct Enemies
-{
-    int energies[5]{0, 0, 2, 2, 4};
-    int maxEnergies[5]{10, 10, 10, 10, 10};
-    int attacks[5]{};
+//* A triangle in normalized device coordinates
+float vertices[] = {
+    -.5f, // x
+    0.5f, // y
+    0.0f, // z, once vertex
+    0.5f,
+    -.5f,
+    0.0f,
+    0.0f,
+    0.5f,
+    0.0f
 };
 
 int main()
 {
-    Hero hero{};
-    Enemies enemies{};
+    //* Setup
+    //* =======
+    glfwInit();
 
-    State state{State::regen};
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
+    glfwWindowHint( GLFW_CONTEXT_VERSION_MINOR, 3 );
+    glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
+    glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
+    GLFWwindow* window = glfwCreateWindow( 1280, 720, "GLFW OpenGL", NULL, NULL );
+    glfwMakeContextCurrent( window );
+    gladLoadGLLoader( (GLADloadproc)glfwGetProcAddress );
 
-    int frame{32};
-    while (--frame)
+    glfwSetKeyCallback( window, quit );
+    while ( !glfwWindowShouldClose( window ) )
     {
-        std::cout << "Frame [" << 32 - frame << "]: ";
-        switch (state)
-        {
-        default:
-        case State::regen:
-        {
-            std::cout << "Regen...\n";
-            //* Regen system
-            hero.energy += 1;
-            if (!(hero.energy < hero.maxEnergy))
-            {
-                std::cout << "Hero rdy\n";
-                state = State::idle;
-            }
+        glfwPollEvents();
 
-            for (auto i{0}; i < 5; ++i)
-            {
-                enemies.energies[i] += 1;
-                if (!(enemies.energies[i] < enemies.maxEnergies[i]))
-                {
-                    std::cout << "Enemy " << i << " rdy\n";
-                    state = State::idle;
-                }
-            }
-            break;
-        }
-        case State::idle:
-        {
-            //* Action system
-            if (!(hero.energy < hero.maxEnergy))
-            {
-                std::cout << "Add/Set hero mov action\n";
-                hero.energy = 0;
-                hero.move = 3;
-                state = State::busy;
-            }
+        glClearColor( 0.3, 0.3, 0.3, 1.0 );
+        glClear( GL_COLOR_BUFFER_BIT );
+        glfwSwapBuffers( window );
 
-            for (auto i{0}; i < 5; ++i)
-            {
-                if (!(enemies.energies[i] < enemies.maxEnergies[i]))
-                {
-                    std::cout << "Add/Set enemy atk action\n";
-                    enemies.energies[i] = 0;
-                    enemies.attacks[i] = 2;
-                    state = State::busy;
-                }
-            }
-            break;
-        }
-        case State::busy:
-        {
-            //* Execute instant actions
-            //* Attack
-            for (auto i{0}; i < 5; ++i)
-            {
-                if (enemies.attacks[i])
-                {
-                    std::cout << "Execute enemy attack action and cleanup action\n";
-                    enemies.attacks[i] = 0;
-                    state = State::end_turn;
-                }
-            }
+        //* VBO (vertex buffer object): to manage used GPU memory (aka. buffer)
+        //* - stores (generated) buffer object names
+        //* - to send (large) batches of data
 
-            //* Execute multiframe actions
-            state = State::end_turn;
-            //* Move
-            if (hero.move)
-            {
-                std::cout << "Execute hero move action\n";
-                hero.move -= 1;
+        unsigned int VBO; // VBO ID
 
-                if (hero.move)
-                {
-                    std::cout << "Hero move action ongoing\n";
-                    state = State::busy;
-                }
-                else
-                {
-                    std::cout << "Hero move action done: Cleanup action\n";
-                }
-            }
-            break;
-        }
-        case State::end_turn:
-        {
-            std::cout << "No actions left for this turn\n";
-            state = State::regen;
-            break;
-        }
-        }
+        //* Create buffer(s) (aka. data storage) on the GPU
+        //* and store a reference to it in the VBO
+        glGenBuffers(
+            1, // amount of buffers
+            &VBO
+        );
+
+        //* Bind the VBO to the GL_ARRAY_BUFFER target (like a pointer)
+        //* In other words: the GL_ARRAY_BUFFER now targets/points to the VBO
+        glBindBuffer(
+            GL_ARRAY_BUFFER,
+            VBO
+        );
+
+        //* Copies user-defined data ('vertices' in this case)
+        //* into currently bound buffer.
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof( vertices ),
+            vertices,
+            GL_STATIC_DRAW
+        );
     }
+
+    glfwDestroyWindow( window );
+    glfwTerminate();
+
+    return 0;
 }

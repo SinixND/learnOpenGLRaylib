@@ -54,6 +54,7 @@
 
 # VERSION					?= $(shell date --iso=seconds)
 TESTMODE				:= false
+NOGUI					:= false
 
 ### Automatically added flags to make command
 MAKEFLAGS 				:= --no-print-directory #-j
@@ -208,7 +209,7 @@ RAYLIB_SRC_DIR 			= $(USR)/lib/raylib/src
 #######################################
 
 ### Label used libraries so the respective -l flags (eg. -lraylib)
-LIBRARIES 				:= raylib
+LIBRARIES 				:= raylib glfw
 ifeq ($(PLATFORM),windows)
     LIBRARIES 			+= opengl32 gdi32 winmm
 endif
@@ -330,6 +331,9 @@ CXX_FLAGS 				:= -std=c++20 -MMD -MP
 FATAL					:= false
 
 ### Build specific flags 
+ifeq ($(NOGUI),true)
+    CXX_FLAGS				+= -DNOGUI
+endif
 ifeq ($(OS),linux)
     CXX_FLAGS 				+= 
     ifeq ($(OS),termux)
@@ -403,7 +407,22 @@ all: bd br
 
 ### CppCheck static analysis
 analyze:
-	cppcheck --quiet --enable=all --suppress=missingIncludeSystem --suppress=missingInclude --suppress=selfAssignment --suppress=cstyleCast --check-level=exhaustive src/
+	@cppcheck \
+		--quiet \
+		--enable=all \
+		--suppress=missingIncludeSystem \
+		--suppress=missingInclude \
+		--suppress=selfAssignment \
+		--suppress=cstyleCast \
+		--suppress=unmatchedSuppression \
+		--inconclusive \
+		--check-level=exhaustive \
+		--cppcheck-build-dir=$(BUILD_DIR_ROOT)/cppcheck \
+		--template=gcc \
+		-I include/ \
+		-I src/ \
+		-i lib/ \
+		src/
 
 ### Build binary with current config
 build: $(BIN_DIR)/$(BIN)$(BIN_EXT)
@@ -448,6 +467,7 @@ clean:
 	@rm -rf $(BUILD_DIR_ROOT)/unix/release/*
 	@rm -rf $(BUILD_DIR_ROOT)/web/release/*
 	@rm -rf $(BUILD_DIR_ROOT)/windows/release/*
+	@rm -rf $(BUILD_DIR_ROOT)/cppcheck/*
 
 ### Debug build
 ### Build compile_commands.json
@@ -472,6 +492,7 @@ init:
 	@mkdir -p $(BUILD_DIR_ROOT)/unix/release/
 	@mkdir -p $(BUILD_DIR_ROOT)/web/release/
 	@mkdir -p $(BUILD_DIR_ROOT)/windows/release/
+	@mkdir -p $(BUILD_DIR_ROOT)/cppcheck/
 
 ### Rule for complete compilation, ready to publish
 publish:
