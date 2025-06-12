@@ -1,45 +1,24 @@
-//* https://raw.githubusercontent.com/raysan5/raylib/master/examples/shaders/resources/shaders/glsl330/base.vs
-
-//* VERTEX SHADER
-//* := **Where** things are drawn
-//* Transforms verticies ("edges")
-
-//* VAO (vertex array object)
-//* Stores where to find the data for each input (vertex) attribute
-
-//* VBO (vertex buffer object)
-//* This is an object that holds/buffers verticies to be passed to the vertex shader
-
-//* VAO is needed BEFORE VBO!
-
-//* === SHADER START ===
 //* Required GLSL version
 #version 330 core
 
-//* 'in' 'type' 'variableName';
 //* Input vertex attributes
-in vec3 vertexPosition;
-in vec2 vertexTexCoord;
-in vec3 vertexNormal;
-in vec4 vertexColor;
+//* 'in' 'type' 'variableName'
+layout (location = 0) in vec2 vertexPosition;
+layout (location = 1) in vec3 vertexColor;
 
 //* Input uniform (const?) values
-uniform mat4 mvp;
+// uniform mat4 var;
 
 //* Output vertex attributes (TO FRAGMENT SHADER)
-//* out type nameOut;
-out vec2 fragTexCoord;
-out vec4 fragColor;
-
-//* NOTE: Add your custom variables here
+out vec4 fragmentColor;
+out vec2 fragmentPosition;
 
 void main()
 {
     //* Output vertex attributes to fragment shader
-    fragTexCoord = vertexTexCoord;
-    fragColor = vertexColor;
+    fragmentColor = vec4(vertexColor, 1.0);
+    fragmentPosition = vertexPosition;
 
-    //* Reqired
-    //* Calculate final vertex position
-    gl_Position = mvp * vec4(vertexPosition, 1.0);
+    //* Reqired: Output final vertex position
+    gl_Position = vec4( vertexPosition, 0.0, 1.0);
 }

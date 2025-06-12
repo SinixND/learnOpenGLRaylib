@@ -13,14 +13,14 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +63 src/main.cpp
-badd +2 ~/test/src/main.cpp.bk
+badd +154 src/main.cpp
+badd +20 ~/test/assets/shaders/vertexShader.vert
+badd +18 ~/test/assets/shaders/fragmentShader.frag
 argglobal
 %argdel
 $argadd src/main.cpp
 edit src/main.cpp
 argglobal
-balt ~/test/src/main.cpp.bk
 setlocal foldmethod=indent
 setlocal foldexpr=vimtex#fold#level(v:lnum)
 setlocal foldmarker={{{,}}}
@@ -28,13 +28,23 @@ setlocal foldignore=#
 setlocal foldlevel=99
 setlocal foldminlines=1
 setlocal foldnestmax=20
-setlocal nofoldenable
-let s:l = 63 - ((14 * winheight(0) + 16) / 32)
+setlocal foldenable
+25
+sil! normal! zo
+92
+sil! normal! zo
+100
+sil! normal! zo
+122
+sil! normal! zo
+124
+sil! normal! zo
+let s:l = 154 - ((12 * winheight(0) + 16) / 32)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 63
-normal! 0
+keepjumps 154
+normal! 05|
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

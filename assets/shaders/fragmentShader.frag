@@ -1,20 +1,13 @@
-// https://raw.githubusercontent.com/raysan5/raylib/master/examples/shaders/resources/shaders/glsl330/base.fs
-
-// FRAGMENT SHADER
-// := **How** things are drawn
-// Adds colors to pixels
-
-// Required
-// GLSL version
+// Required GLSL version
 #version 330
 
 // Input vertex attributes (FROM VERTEX SHADER)
-in vec2 fragTexCoord;
-in vec4 fragColor;
+in vec4 fragmentColor;
+in vec2 fragmentPosition;
 
 // Input uniform (const?) values
-uniform sampler2D texture0;
-uniform vec4 colDiffuse;
+// uniform sampler2D texture0;
+// uniform vec4 colDiffuse;
 
 // Output fragment color
 out vec4 finalColor;
@@ -23,10 +16,23 @@ out vec4 finalColor;
 
 void main()
 {
-    // Texel color fetching from texture sampler
-    vec4 texelColor = texture(texture0, fragTexCoord);
+    //* Required: output final vertex color
+    finalColor = vec4(
+        fragmentColor.r * sqrt(
+            (fragmentPosition.x 
+                * fragmentPosition.x) 
+            + (fragmentPosition.y 
+                * fragmentPosition.y)),
+        fragmentColor.g * sqrt(
+            (fragmentPosition.x 
+                * fragmentPosition.x) 
+            + (fragmentPosition.y 
+                * fragmentPosition.y)),
+        fragmentColor.b * sqrt(
+            (fragmentPosition.x 
+                * fragmentPosition.x) 
+            + (fragmentPosition.y 
+                * fragmentPosition.y)),
+        1.0);
 
-    // NOTE: Implement here your fragment shader code
-
-    finalColor = texelColor * colDiffuse;
 }
