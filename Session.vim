@@ -3,7 +3,7 @@ let s:so_save = &g:so | let s:siso_save = &g:siso | setg so=0 siso=0 | setl so=-
 let v:this_session=expand("<sfile>:p")
 silent only
 silent tabonly
-cd ~/test
+cd ~/coding/git_repos/test
 if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
@@ -13,14 +13,15 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +154 src/main.cpp
-badd +20 ~/test/assets/shaders/vertexShader.vert
-badd +18 ~/test/assets/shaders/fragmentShader.frag
+badd +1 src/main.cpp
+badd +1 ~/coding/git_repos/test/assets/shaders/vertexShader.vert
+badd +1 ~/coding/git_repos/test/assets/shaders/fragmentShader.frag
 argglobal
 %argdel
 $argadd src/main.cpp
 edit src/main.cpp
 argglobal
+balt ~/coding/git_repos/test/assets/shaders/fragmentShader.frag
 setlocal foldmethod=indent
 setlocal foldexpr=vimtex#fold#level(v:lnum)
 setlocal foldmarker={{{,}}}
@@ -28,23 +29,13 @@ setlocal foldignore=#
 setlocal foldlevel=99
 setlocal foldminlines=1
 setlocal foldnestmax=20
-setlocal foldenable
-25
-sil! normal! zo
-92
-sil! normal! zo
-100
-sil! normal! zo
-122
-sil! normal! zo
-124
-sil! normal! zo
-let s:l = 154 - ((12 * winheight(0) + 16) / 32)
+setlocal nofoldenable
+let s:l = 1 - ((0 * winheight(0) + 28) / 57)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 154
-normal! 05|
+keepjumps 1
+normal! 0
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

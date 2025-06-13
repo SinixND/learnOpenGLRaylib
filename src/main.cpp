@@ -3,7 +3,6 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <string_view>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -18,7 +17,9 @@ void updateViewport(
     int height
 );
 
-std::string readFile( std::string_view path );
+void processInput( GLFWwindow* window );
+
+std::string readFile( std::string path );
 
 int main()
 {
@@ -209,6 +210,8 @@ int main()
     //* Render loop
     while ( !glfwWindowShouldClose( window ) )
     {
+        processInput( window );
+
         //* Set clearing color and clear/reset window
         glClearColor(
             0.0f,
@@ -266,7 +269,22 @@ void updateViewport(
     );
 }
 
-std::string readFile( std::string_view path )
+void processInput( GLFWwindow* window )
+{
+    if ( glfwGetKey(
+             window,
+             GLFW_KEY_ESCAPE
+         )
+         == GLFW_PRESS )
+    {
+        glfwSetWindowShouldClose(
+            window,
+            true
+        );
+    }
+}
+
+std::string readFile( std::string path )
 {
     std::string content{};
     std::ifstream inputFileStream( path );
@@ -287,3 +305,4 @@ std::string readFile( std::string_view path )
 
     return content;
 }
+
