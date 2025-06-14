@@ -13,15 +13,33 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +1 src/main.cpp
-badd +1 ~/coding/git_repos/test/assets/shaders/vertexShader.vert
-badd +1 ~/coding/git_repos/test/assets/shaders/fragmentShader.frag
+badd +12 ~/coding/git_repos/test/assets/shaders/vertexShader.vert
+badd +25 ~/coding/git_repos/test/assets/shaders/fragmentShader.frag
+badd +195 ~/coding/git_repos/test/src/main.cpp.old
+badd +31 ~/coding/git_repos/test/src/main.cpp
 argglobal
 %argdel
-$argadd src/main.cpp
-edit src/main.cpp
+$argadd ~/coding/git_repos/test/src/main.cpp
+edit ~/coding/git_repos/test/src/main.cpp
+let s:save_splitbelow = &splitbelow
+let s:save_splitright = &splitright
+set splitbelow splitright
+wincmd _ | wincmd |
+vsplit
+1wincmd h
+wincmd w
+let &splitbelow = s:save_splitbelow
+let &splitright = s:save_splitright
+wincmd t
+let s:save_winminheight = &winminheight
+let s:save_winminwidth = &winminwidth
+set winminheight=0
+set winheight=1
+set winminwidth=0
+set winwidth=1
+exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 argglobal
-balt ~/coding/git_repos/test/assets/shaders/fragmentShader.frag
 setlocal foldmethod=indent
 setlocal foldexpr=vimtex#fold#level(v:lnum)
 setlocal foldmarker={{{,}}}
@@ -30,12 +48,36 @@ setlocal foldlevel=99
 setlocal foldminlines=1
 setlocal foldnestmax=20
 setlocal nofoldenable
-let s:l = 1 - ((0 * winheight(0) + 28) / 57)
+let s:l = 31 - ((10 * winheight(0) + 28) / 57)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 1
+keepjumps 31
 normal! 0
+wincmd w
+argglobal
+if bufexists(fnamemodify("~/coding/git_repos/test/src/main.cpp", ":p")) | buffer ~/coding/git_repos/test/src/main.cpp | else | edit ~/coding/git_repos/test/src/main.cpp | endif
+if &buftype ==# 'terminal'
+  silent file ~/coding/git_repos/test/src/main.cpp
+endif
+setlocal foldmethod=indent
+setlocal foldexpr=vimtex#fold#level(v:lnum)
+setlocal foldmarker={{{,}}}
+setlocal foldignore=#
+setlocal foldlevel=99
+setlocal foldminlines=1
+setlocal foldnestmax=20
+setlocal nofoldenable
+let s:l = 31 - ((10 * winheight(0) + 28) / 57)
+if s:l < 1 | let s:l = 1 | endif
+keepjumps exe s:l
+normal! zt
+keepjumps 31
+normal! 0
+wincmd w
+2wincmd w
+exe 'vert 1resize ' . ((&columns * 105 + 106) / 212)
+exe 'vert 2resize ' . ((&columns * 106 + 106) / 212)
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf
@@ -43,6 +85,8 @@ endif
 unlet! s:wipebuf
 set winheight=1 winwidth=20
 let &shortmess = s:shortmess_save
+let &winminheight = s:save_winminheight
+let &winminwidth = s:save_winminwidth
 let s:sx = expand("<sfile>:p:r")."x.vim"
 if filereadable(s:sx)
   exe "source " . fnameescape(s:sx)
