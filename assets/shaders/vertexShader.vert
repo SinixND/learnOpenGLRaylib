@@ -15,6 +15,8 @@ out vec2 fragmentPosition;
 
 void main()
 {
+    gl_PointSize = 10.0f;
+
     //* Output vertex attributes to fragment shader
     fragmentColor = vec4(vertexColor, 1.0);
     fragmentPosition = vertexPosition;
