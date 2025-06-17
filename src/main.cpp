@@ -1,28 +1,51 @@
+//* DEFINE VERSION HERE
+// #define VERSION_OPENGL
+#define VERSION_RAYLIB
+
+#if defined( VERSION_OPENGL )
 #include <fstream>
-#include <glad/glad.h>
 #include <iostream>
 #include <sstream>
 #include <string>
 
+#include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#endif
+
+#if defined( VERSION_RAYLIB )
+#include <raylib.h>
+#include <rlgl.h>
+#endif
+
+int const WINDOW_WIDTH{ 800 };
+int const WINDOW_HEIGHT{ 940 };
 
 char const* const vertexShaderPath{ "assets/shaders/vertexShader.vert" };
 char const* const fragmentShaderPath{ "assets/shaders/fragmentShader.frag" };
 
+//* Forward declares
+#if defined( VERSION_OPENGL )
 //* Sync viewport to window
-void updateViewport(
-    GLFWwindow* window,
-    int width,
-    int height
-);
-
+void updateViewport( GLFWwindow* window, int width, int height );
 void processInput( GLFWwindow* window );
-
 std::string readFile( std::string path );
+#endif
 
 int main()
 {
+//* Initialize window and OpenGL context
+#if defined( VERSION_RAYLIB )
+    InitWindow(
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        "raylib window"
+    );
+
+    //* Draw triangle as points
+    rlEnablePointMode();
+#endif
+#if defined( VERSION_OPENGL )
     //* GLFW: Init and configure
     glfwInit();
     glfwWindowHint( GLFW_CONTEXT_VERSION_MAJOR, 3 );
@@ -30,8 +53,11 @@ int main()
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
     glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
 
+    //* Draw triangle as points
+    glEnable( GL_PROGRAM_POINT_SIZE );
+
     //* GLFW: Create window
-    GLFWwindow* window = glfwCreateWindow( 1280, 720, "GLFW OpenGL", NULL, NULL );
+    GLFWwindow* window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "GLFW OpenGL", NULL, NULL );
 
     if ( !window )
     {
@@ -54,8 +80,16 @@ int main()
         std::cerr << "[ERROR] GLAD initialization failed!\n";
         return 1;
     }
+#endif
 
-    //* Shader
+//* ShaderProgram (Load source, compile source, link program, compile program)
+#if defined( VERSION_RAYLIB )
+    Shader rlShader = LoadShader(
+        vertexShaderPath,
+        fragmentShaderPath
+    );
+#endif
+#if defined( VERSION_OPENGL )
     GLuint vertexShader = glCreateShader( GL_VERTEX_SHADER );
     GLuint fragmentShader = glCreateShader( GL_FRAGMENT_SHADER );
 
@@ -128,12 +162,18 @@ int main()
     //* Delete shaders after linking
     glDeleteShader( vertexShader );
     glDeleteShader( fragmentShader );
+#endif
 
     //* Data
     //* A triangle in normalized device coordinates
     // clang-format off
+#if defined( VERSION_RAYLIB )
+    float vertices[] = {
+#endif
+#if defined( VERSION_OPENGL )
     GLfloat vertices[] = {
-        //* x, y, r, g, b
+#endif
+        // x, y, r, g, b
         -.5f, -.5f,  1.0f, 0.0f, 0.0f, 
         0.5f, -.5f,  0.0f, 1.0f, 0.0f, 
         0.0f, 0.5f,  0.0f, 0.0f, 1.0f
@@ -144,27 +184,53 @@ int main()
     //* - how to access VBO
     //* or
     //* - what is the structure of the VBO
-
-    //* VBO (vertex buffer object): to manage used GPU memory (aka. buffer)
-    //* - stores (generated) buffer object names
-    //* - to send (large) batches of data
-    GLuint vao, vbo; // (unsigned int) reference ID
-
-    glEnable( GL_PROGRAM_POINT_SIZE );
+#if defined( VERSION_RAYLIB )
+    unsigned int vao = rlLoadVertexArray();
+#endif
+#if defined( VERSION_OPENGL )
+    GLuint vao; // (unsigned int) reference ID
 
     //* Create buffer(s) (aka. data storage) on the GPU
-    //* and store a reference to it (eg. in the VBO)
+    //* and store a reference to it
     glGenVertexArrays(
         1,
         &vao
     );
+#endif
+
+    //* Bind VAO
+    //* Any subsequent vertex attribute calls from that point on will be stored inside the VAO
+    //* A vertex array object stores the following:
+    //* - Calls to `glEnableVertexAttribArray` or `glDisableVertexAttribArray`.
+    //* - Vertex attribute configurations via `glVertexAttribPointer`.
+    //* - Vertex buffer objects associated with vertex attributes by calls to `glVertexAttribPointer`.
+#if defined( VERSION_RAYLIB )
+    rlEnableVertexArray( vao );
+#endif
+#if defined( VERSION_OPENGL )
+    glBindVertexArray( vao );
+#endif
+
+    //* VBO (vertex buffer object): to manage used GPU memory (aka. buffer)
+    //* - stores (generated) buffer object names
+    //* - to send (large) batches of data
+    //* Gen, Bind and Buffer
+#if defined( VERSION_RAYLIB )
+    unsigned int vbo = rlLoadVertexBuffer(
+        vertices,
+        sizeof( vertices ),
+        false
+    );
+#endif
+#if defined( VERSION_OPENGL )
+    GLuint vbo; // (unsigned int) reference ID
+
+    //* Create buffer(s) (aka. data storage) on the GPU
+    //* and store a reference to it
     glGenBuffers(
         1, // amount of buffers
         &vbo
     );
-
-    //* Bind VAO
-    glBindVertexArray( vao );
 
     //* Bind the VBO to the GL_ARRAY_BUFFER target (like a pointer)
     //* In other words: the GL_ARRAY_BUFFER now targets/points to the VBO
@@ -182,12 +248,42 @@ int main()
         GL_STATIC_DRAW
     );
 
-    //* Link vertex attributes (vertices/input to vertex shader), so the must match the inputs in the vertex shader: "layout (location = X)"
+#endif
+
+    //* Bind VAO before here, needed for following functions!
+
+    //* Link vertex attributes (vertices/input to vertex shader): they must match the inputs in the vertex shader ["layout (location = X)"]
     //* "When you read the input for the vertex shaders vertex attribute(s),
     //* interpret (periodically) every [stride] bits,
     //* starting from [index]
     //* as [type],
     //* which appears first at [pointer] within the data"
+    //* This is stored in the currently bound VAO (if bound)
+#if defined( VERSION_RAYLIB )
+    //* Position
+    rlSetVertexAttribute(
+        0,
+        2,
+        RL_FLOAT,
+        false,
+        5 * sizeof( float ),
+        0
+    );
+    //* Color
+    rlSetVertexAttribute(
+        1,
+        3,
+        RL_FLOAT,
+        false,
+        5 * sizeof( float ),
+        0
+    );
+
+    rlEnableVertexAttribute( 0 );
+    rlEnableVertexAttribute( 1 );
+#endif
+#if defined( VERSION_OPENGL )
+    //* Position
     glVertexAttribPointer(
         0, // "layout (location = 0)" in vertex shader
         2,
@@ -196,6 +292,7 @@ int main()
         5 * sizeof( GLfloat ),
         (void*)0
     );
+    //* Color
     glVertexAttribPointer(
         1,
         3,
@@ -206,14 +303,26 @@ int main()
     );
 
     //* Enable the vertex attribute (aka. input data)
+    //* This is also stored in the currently bound VAO (if bound)
     glEnableVertexAttribArray( 0 );
     glEnableVertexAttribArray( 1 );
+#endif
 
     //* Render loop
-    while ( !glfwWindowShouldClose( window ) )
+    while (
+#if defined( VERSION_RAYLIB )
+        !WindowShouldClose()
+#endif
+#if defined( VERSION_OPENGL )
+            !glfwWindowShouldClose( window )
+#endif
+    )
     {
-        processInput( window );
-
+#if defined( VERSION_RAYLIB )
+        BeginDrawing(); // Seems to only update time?
+        ClearBackground( BLACK );
+#endif
+#if defined( VERSION_OPENGL )
         //* Set clearing color and clear/reset window
         glClearColor(
             0.0f,
@@ -222,27 +331,57 @@ int main()
             1.0f
         );
         glClear( GL_COLOR_BUFFER_BIT );
+#endif
 
-        //* Activate shader
+        //* - Activate shader
+        //* - Bind VAO to use
+        //* - Draw
+#if defined( VERSION_RAYLIB )
+        rlEnableShader( rlShader.id );
+
+        rlEnableVertexArray( vao );
+
+        rlDrawVertexArray(
+            0,
+            3
+        );
+#endif
+#if defined( VERSION_OPENGL )
         glUseProgram( shaderProgram );
 
-        //* Bind VAO to use
         glBindVertexArray( vao );
 
-        //* Draw
         glDrawArrays(
             // GL_TRIANGLES,
             GL_POINTS,
             0,
             3
         );
+#endif
 
-        //* GLFW: Swap main buffers and poll events
+//* GLFW: Swap main buffers and poll events
+#if defined( VERSION_RAYLIB )
+        rlDisableVertexArray();
+
+        EndDrawing();
+#endif
+#if defined( VERSION_OPENGL )
+        glBindVertexArray( 0 );
+
         glfwSwapBuffers( window );
+        processInput( window );
         glfwPollEvents();
+#endif
     }
 
     //* Close: free all resources
+#if defined( VERSION_RAYLIB )
+    rlUnloadVertexArray( vao );
+    rlUnloadVertexBuffer( vbo );
+
+    CloseWindow();
+#endif
+#if defined( VERSION_OPENGL )
     glDeleteVertexArrays(
         1,
         &vao
@@ -254,10 +393,12 @@ int main()
     glDeleteProgram( shaderProgram );
     glfwDestroyWindow( window );
     glfwTerminate();
+#endif
 
     return 0;
 }
 
+#if defined( VERSION_OPENGL )
 void updateViewport(
     [[maybe_unused]] GLFWwindow* window,
     int width,
@@ -308,3 +449,4 @@ std::string readFile( std::string path )
 
     return content;
 }
+#endif
